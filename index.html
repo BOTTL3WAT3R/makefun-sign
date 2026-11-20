@@ -14,22 +14,41 @@
   button { background:#4f7cff; color:#fff; border:0; border-radius:8px; padding:10px 14px; font-size:14px; cursor:pointer; margin:6px 6px 6px 0; }
   button:disabled { background:#3a4356; cursor:not-allowed; }
   button.copy { background:#2a3242; }
+  button.sign1 { background:#22a35a; font-size:16px; padding:14px 20px; font-weight:600; }
   textarea { width:100%; box-sizing:border-box; background:#0b0e14; color:#cfe3ff; border:1px solid #2a3242; border-radius:8px; padding:10px; font-family:ui-monospace, monospace; font-size:12px; }
   .sig { color:#8be89b; }
   .warn { color:#ffb454; font-size:13px; }
   .ok { color:#8be89b; font-size:13px; }
   .step { font-size:13px; color:#9aa7bd; }
+  .pend { font-size:16px; color:#ffb454; margin:18px 0 4px; }
+  details.done { margin-top:28px; }
+  details.done summary { cursor:pointer; color:#9aa7bd; font-size:14px; padding:8px 0; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>✍️ Tanda tangan entri make.fun</h1>
-  <p class="step">Buka halaman ini di browser yang ada wallet Solana lo (Phantom/Solflare/dll). Wallet yang benar: <b>6ZF5Qh14JdG6jLDDWKsevAj25p6UrapMKLMjbUHTtBZr</b>. Pesan berlaku <b>10 menit</b> sejak dibuat — habis tanda tangan, langsung paste hasilnya ke chat Muse.</p>
+  <p class="step">Buka halaman ini di browser yang ada wallet Solana lo (Phantom/Solflare/dll). Wallet yang benar: <b>6ZF5Qh14JdG6jLDDWKsevAj25p6UrapMKLMjbUHTtBZr</b>. Kartu yang menunggu tanda tangan selalu di paling atas — klik tombol hijaunya sekali, setujui di wallet, hasilnya tersalin otomatis, lalu paste ke chat Muse (berlaku <b>10 menit</b>).</p>
+  <h2 class="pend">⏳ Menunggu tanda tangan lo</h2>
   <div id="entries"></div>
+  <details class="done">
+    <summary>Kartu lama — sudah ditandatangani (klik untuk membuka)</summary>
+    <div id="done"></div>
+  </details>
 </div>
 <script>
 const WALLET = "6ZF5Qh14JdG6jLDDWKsevAj25p6UrapMKLMjbUHTtBZr";
-const ENTRIES = [
+const PENDING = [
+  { slug: "gta6-trophy-rarity-forecast-01", label: "1️⃣7️⃣ GTA 6 Trophy Forecast V3 FORENSIK (gta6-trophy-rarity-forecast-01)",
+    repo: "https://github.com/BOTTL3WAT3R/makefun-gta6-trophy-rarity-forecast",
+    commit: "980e31500ea08ae6fe55580a3550a001865bc3d3",
+    transcripts: "6460357511b01d29f2e86255913b67dd885d36a94761bc7f4fb6a2352c4ce6b7" },
+  { slug: "news-image-20261119", label: "1️⃣8️⃣ News Image 19 Nov V2 (news-image-20261119)",
+    repo: "https://github.com/BOTTL3WAT3R/makefun-news-image-20261119",
+    commit: "18eb1028e838c1f29ffe4c6646b7a6121336bce8",
+    transcripts: "44d366d6a2c7c420389bbad8e9664de568810fefbf30640ccf49189fdf6fd69e" }
+];
+const DONE = [
   { slug: "github-core-clone-01", label: "1️⃣ GitHub Forge (github-core-clone-01)",
     repo: "https://github.com/BOTTL3WAT3R/makefun-forge",
     commit: "f8697ec7331ed4e6ffff1e0cefacb4452c7a42e5",
@@ -94,14 +113,6 @@ const ENTRIES = [
     repo: "https://github.com/BOTTL3WAT3R/makefun-gta6-trophy-rarity-forecast",
     commit: "62a2a9df16b6cd2cf67433ca80417948276ab4c4",
     transcripts: "ef2cb3ecb32a34e62a3cdf601074baee2d4574f29eba65cf9259ad40fbbb46cc" },
-  { slug: "gta6-trophy-rarity-forecast-01", label: "1️⃣7️⃣ GTA 6 Trophy Forecast V3 FORENSIK (gta6-trophy-rarity-forecast-01)",
-    repo: "https://github.com/BOTTL3WAT3R/makefun-gta6-trophy-rarity-forecast",
-    commit: "980e31500ea08ae6fe55580a3550a001865bc3d3",
-    transcripts: "6460357511b01d29f2e86255913b67dd885d36a94761bc7f4fb6a2352c4ce6b7" },
-  { slug: "news-image-20261119", label: "1️⃣8️⃣ News Image 19 Nov V2 (news-image-20261119)",
-    repo: "https://github.com/BOTTL3WAT3R/makefun-news-image-20261119",
-    commit: "18eb1028e838c1f29ffe4c6646b7a6121336bce8",
-    transcripts: "44d366d6a2c7c420389bbad8e9664de568810fefbf30640ccf49189fdf6fd69e" },
   { slug: "gta6-meme-x-01", label: "1️⃣9️⃣ GTA 6 Meme X (gta6-meme-x-01)",
     repo: "https://github.com/BOTTL3WAT3R/makefun-gta6-meme-x",
     commit: "672a0c4e759fdc3ace769a35aa76260754e174dd",
@@ -130,32 +141,25 @@ function getProvider() {
   if (window.solflare) return window.solflare;
   return null;
 }
-const root = document.getElementById("entries");
-ENTRIES.forEach((e, idx) => {
+function buildCard(e, key, rootEl) {
   const card = document.createElement("div"); card.className = "card";
   card.innerHTML = "<h2>" + e.label + "</h2>" +
     '<div class="meta">Repo: ' + e.repo + "<br>Commit: " + e.commit + "<br>Transcripts: " + e.transcripts + "</div>" +
-    '<p><button id="mk' + idx + '">1) Buat pesan</button>' +
-    '<button id="sg' + idx + '" disabled>2) Tanda tangani dengan wallet</button></p>' +
-    '<div id="st' + idx + '"></div>' +
-    '<p class="step">Pesan entri:</p><textarea id="msg' + idx + '" rows="11" readonly></textarea>' +
-    '<p class="step">Tanda tangan (base58):</p><textarea id="sig' + idx + '" class="sig" rows="3" readonly></textarea>' +
-    '<p><button class="copy" id="cp' + idx + '">Salin pesan + tanda tangan</button></p>';
-  root.appendChild(card);
-  let message = "";
-  document.getElementById("mk" + idx).onclick = () => {
+    '<p><button class="sign1" id="sg' + key + '">✍️ Tanda tangani — 1 klik</button></p>' +
+    '<div id="st' + key + '"></div>' +
+    '<p class="step">Pesan entri:</p><textarea id="msg' + key + '" rows="11" readonly></textarea>' +
+    '<p class="step">Tanda tangan (base58):</p><textarea id="sig' + key + '" class="sig" rows="3" readonly></textarea>' +
+    '<p><button class="copy" id="cp' + key + '">Salin pesan + tanda tangan</button></p>';
+  rootEl.appendChild(card);
+  document.getElementById("sg" + key).onclick = async () => {
+    const st = document.getElementById("st" + key);
     const nonceBytes = new Uint8Array(16); crypto.getRandomValues(nonceBytes);
     const nonce = Array.from(nonceBytes).map(b => b.toString(16).padStart(2, "0")).join("");
     const issued = new Date().toISOString().replace(/\.\d+Z$/, "Z");
-    message = ["make.fun entry v1", "Domain: make.fun", "Competition: " + e.slug,
+    const message = ["make.fun entry v1", "Domain: make.fun", "Competition: " + e.slug,
       "Repo: " + e.repo, "Commit: " + e.commit, "Transcripts: " + e.transcripts,
       "Wallet: " + WALLET, "Nonce: " + nonce, "Issued At: " + issued].join("\n");
-    document.getElementById("msg" + idx).value = message;
-    document.getElementById("sg" + idx).disabled = false;
-    document.getElementById("st" + idx).innerHTML = '<span class="warn">⏱ Pesan dibuat — tanda tangani dan paste ke chat dalam 10 menit.</span>';
-  };
-  document.getElementById("sg" + idx).onclick = async () => {
-    const st = document.getElementById("st" + idx);
+    document.getElementById("msg" + key).value = message;
     const provider = getProvider();
     if (!provider) { st.innerHTML = '<span class="warn">Wallet Solana tidak ketemu di browser ini. Buka halaman ini di browser yang ada Phantom/Solflare lo, atau tanda tangani pesan di atas manual di aplikasi wallet lalu paste tanda tangannya ke chat.</span>'; return; }
     try {
@@ -165,17 +169,26 @@ ENTRIES.forEach((e, idx) => {
       const encoded = new TextEncoder().encode(message);
       const signed = await provider.signMessage(encoded, "utf8");
       const sigBytes = signed.signature ? signed.signature : signed;
-      document.getElementById("sig" + idx).value = b58encode(new Uint8Array(sigBytes));
-      st.innerHTML = '<span class="ok">✅ Berhasil ditandatangani. Salin pesan + tanda tangan, paste ke chat Muse sekarang.</span>';
+      const sig = b58encode(new Uint8Array(sigBytes));
+      document.getElementById("sig" + key).value = sig;
+      let copied = false;
+      try { await navigator.clipboard.writeText(message + "\n---SIGNATURE---\n" + sig); copied = true; } catch (err) {}
+      st.innerHTML = copied
+        ? '<span class="ok">✅ Berhasil ditandatangani dan SUDAH TERSALIN otomatis. Paste ke chat Muse sekarang — berlaku 10 menit.</span>'
+        : '<span class="ok">✅ Berhasil ditandatangani. Klik tombol "Salin pesan + tanda tangan" di bawah, lalu paste ke chat Muse — berlaku 10 menit.</span>';
     } catch (err) {
       st.innerHTML = '<span class="warn">Gagal: ' + (err && err.message ? err.message : err) + "</span>";
     }
   };
-  document.getElementById("cp" + idx).onclick = async () => {
-    const text = document.getElementById("msg" + idx).value + "\n---SIGNATURE---\n" + document.getElementById("sig" + idx).value;
+  document.getElementById("cp" + key).onclick = async () => {
+    const text = document.getElementById("msg" + key).value + "\n---SIGNATURE---\n" + document.getElementById("sig" + key).value;
     try { await navigator.clipboard.writeText(text); } catch (e) {}
   };
-});
+}
+const root = document.getElementById("entries");
+PENDING.forEach((e, i) => buildCard(e, "p" + i, root));
+const doneRoot = document.getElementById("done");
+DONE.forEach((e, i) => buildCard(e, "d" + i, doneRoot));
 </script>
 </body>
 </html>
