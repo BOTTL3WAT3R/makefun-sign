@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>make.fun — Tanda Tangan 1x Pakai (Hidden Spec CLI 01 - mend)</title>
+<style>
+  body { font-family: system-ui, sans-serif; background:#0b0e14; color:#e6e6e6; margin:0; padding:20px; }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 20px; }
+  .card { background:#151a24; border:1px solid #2a3242; border-radius:12px; padding:16px; margin:16px 0; }
+  .card h2 { margin:0 0 6px; font-size:17px; }
+  .meta { font-size:12px; color:#9aa7bd; word-break:break-all; }
+  button { background:#4f7cff; color:#fff; border:0; border-radius:8px; padding:10px 14px; font-size:14px; cursor:pointer; margin:6px 6px 6px 0; }
+  button.copy { background:#2a3242; }
+  button.sign1 { background:#22a35a; font-size:16px; padding:14px 20px; font-weight:600; }
+  textarea { width:100%; box-sizing:border-box; background:#0b0e14; color:#cfe3ff; border:1px solid #2a3242; border-radius:8px; padding:10px; font-family:ui-monospace, monospace; font-size:12px; }
+  .sig { color:#8be89b; }
+  .warn { color:#ffb454; font-size:13px; }
+  .ok { color:#8be89b; font-size:13px; }
+  .step { font-size:13px; color:#9aa7bd; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>✍️ Tanda tangan 1x pakai — Hidden Spec CLI 01 (mend)</h1>
+  <p class="step">Halaman ini hanya berisi SATU kartu untuk entri post-tiktok-day-one-day-seven-20261123-0327 (video TikTok BRICKSTORM day one vs day seven, sudah live di TikTok @bottlemake.fun, kit check 14/0). Buka di browser yang ada wallet Solana lo (Phantom/Solflare/dll). Wallet yang benar: <b>6ZF5Qh14JdG6jLDDWKsevAj25p6UrapMKLMjbUHTtBZr</b>. Klik tombol hijaunya sekali, setujui di wallet, hasilnya tersalin otomatis, lalu paste ke chat Muse (berlaku <b>10 menit</b> sejak klik).</p>
+  <div id="entries"></div>
+</div>
+<script>
+const WALLET = "6ZF5Qh14JdG6jLDDWKsevAj25p6UrapMKLMjbUHTtBZr";
+const PENDING = [
+  { slug: "post-tiktok-day-one-day-seven-20261123-0327", label: "5️⃣2️⃣ Post TikTok - Day one, day seven (post-tiktok-day-one-day-seven-20261123-0327)",
+    repo: "https://github.com/BOTTL3WAT3R/makefun-post-tiktok-day-one-day-seven-20261123-0327",
+    commit: "064679acf59137f6088e13661d5aee957cf1a744",
+    transcripts: "8239369d24f79697061fc7b78bdec8e3e1de301fc16843183b1444c7719852ac" }
+];
+const B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+function b58encode(bytes) {
+  let zeros = 0; while (zeros < bytes.length && bytes[zeros] === 0) zeros++;
+  let digits = [0];
+  for (let i = zeros; i < bytes.length; i++) {
+    let carry = bytes[i];
+    for (let j = 0; j < digits.length; j++) { carry += digits[j] << 8; digits[j] = carry % 58; carry = (carry / 58) | 0; }
+    while (carry) { digits.push(carry % 58); carry = (carry / 58) | 0; }
+  }
+  let out = "1".repeat(zeros);
+  for (let i = digits.length - 1; i >= 0; i--) out += B58[digits[i]];
+  return out;
+}
+function getProvider() {
+  if (window.phantom && window.phantom.solana) return window.phantom.solana;
+  if (window.solana) return window.solana;
+  if (window.solflare) return window.solflare;
+  return null;
+}
+function buildCard(e, key, rootEl) {
+  const card = document.createElement("div"); card.className = "card";
+  card.innerHTML = "<h2>" + e.label + "</h2>" +
+    '<div class="meta">Repo: ' + e.repo + "<br>Commit: " + e.commit + "<br>Transcripts: " + e.transcripts + "</div>" +
+    '<p><button class="sign1" id="sg' + key + '">✍️ Tanda tangani — 1 klik</button></p>' +
+    '<div id="st' + key + '"></div>' +
+    '<p class="step">Pesan entri:</p><textarea id="msg' + key + '" rows="11" readonly></textarea>' +
+    '<p class="step">Tanda tangan (base58):</p><textarea id="sig' + key + '" class="sig" rows="3" readonly></textarea>' +
+    '<p><button class="copy" id="cp' + key + '">Salin pesan + tanda tangan</button></p>';
+  rootEl.appendChild(card);
+  document.getElementById("sg" + key).onclick = async () => {
+    const st = document.getElementById("st" + key);
+    const nonceBytes = new Uint8Array(16); crypto.getRandomValues(nonceBytes);
+    const nonce = Array.from(nonceBytes).map(b => b.toString(16).padStart(2, "0")).join("");
+    const issued = new Date().toISOString().replace(/\.\d+Z$/, "Z");
+    const message = ["make.fun entry v1", "Domain: make.fun", "Competition: " + e.slug,
+      "Repo: " + e.repo, "Commit: " + e.commit, "Transcripts: " + e.transcripts,
+      "Wallet: " + WALLET, "Nonce: " + nonce, "Issued At: " + issued].join("\n");
+    document.getElementById("msg" + key).value = message;
+    const provider = getProvider();
+    if (!provider) { st.innerHTML = '<span class="warn">Wallet Solana tidak ketemu di browser ini. Buka halaman ini di browser yang ada Phantom/Solflare lo, atau tanda tangani pesan di atas manual di aplikasi wallet lalu paste tanda tangannya ke chat.</span>'; return; }
+    try {
+      const resp = await provider.connect();
+      const pub = (resp && resp.publicKey ? resp.publicKey : provider.publicKey).toString();
+      if (pub !== WALLET) { st.innerHTML = '<span class="warn">⚠️ Wallet yang terhubung: ' + pub + ' — BUKAN wallet akun make.fun (' + WALLET + '). Ganti wallet dulu, tanda tangannya bakal ditolak kalau pakai wallet ini.</span>'; return; }
+      const encoded = new TextEncoder().encode(message);
+      const signed = await provider.signMessage(encoded, "utf8");
+      const sigBytes = signed.signature ? signed.signature : signed;
+      const sig = b58encode(new Uint8Array(sigBytes));
+      document.getElementById("sig" + key).value = sig;
+      let copied = false;
+      try { await navigator.clipboard.writeText(message + "\n---SIGNATURE---\n" + sig); copied = true; } catch (err) {}
+      st.innerHTML = copied
+        ? '<span class="ok">✅ Berhasil ditandatangani dan SUDAH TERSALIN otomatis. Paste ke chat Muse sekarang — berlaku 10 menit.</span>'
+        : '<span class="ok">✅ Berhasil ditandatangani. Klik tombol "Salin pesan + tanda tangan" di bawah, lalu paste ke chat Muse — berlaku 10 menit.</span>';
+    } catch (err) {
+      st.innerHTML = '<span class="warn">Gagal: ' + (err && err.message ? err.message : err) + "</span>";
+    }
+  };
+  document.getElementById("cp" + key).onclick = async () => {
+    const text = document.getElementById("msg" + key).value + "\n---SIGNATURE---\n" + document.getElementById("sig" + key).value;
+    try { await navigator.clipboard.writeText(text); } catch (e) {}
+  };
+}
+const root = document.getElementById("entries");
+PENDING.forEach((e, i) => buildCard(e, "p" + i, root));
+</script>
+</body>
+</html>
