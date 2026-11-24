@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>make.fun — Tanda Tangan 1x Pakai (Hidden Spec CLI 01 - mend)</title>
+<style>
+  body { font-family: system-ui, sans-serif; background:#0b0e14; color:#e6e6e6; margin:0; padding:20px; }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 20px; }
+  .card { background:#151a24; border:1px solid #2a3242; border-radius:12px; padding:16px; margin:16px 0; }
+  .card h2 { margin:0 0 6px; font-size:17px; }
+  .meta { font-size:12px; color:#9aa7bd; word-break:break-all; }
+  button { background:#4f7cff; color:#fff; border:0; border-radius:8px; padding:10px 14px; font-size:14px; cursor:pointer; margin:6px 6px 6px 0; }
+  button.copy { background:#2a3242; }
+  button.sign1 { background:#22a35a; font-size:16px; padding:14px 20px; font-weight:600; }
+  textarea { width:100%; box-sizing:border-box; background:#0b0e14; color:#cfe3ff; border:1px solid #2a3242; border-radius:8px; padding:10px; font-family:ui-monospace, monospace; font-size:12px; }
+  .sig { color:#8be89b; }
+  .warn { color:#ffb454; font-size:13px; }
+  .ok { color:#8be89b; font-size:13px; }
+  .step { font-size:13px; color:#9aa7bd; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>✍️ Tanda tangan batch — 7 entri Gelombang 1 (pesan tetap)</h1>
+  <p class="step">Halaman ini berisi 7 kartu entri make.fun dengan pesan yang SUDAH TETAP. Buka di browser yang ada wallet Solana lo. Wallet yang benar: <b>6ZF5Qh14JdG6jLDDWKsevAj25p6UrapMKLMjbUHTtBZr</b>. Tanda tangani SETIAP kartu satu per satu (klik tombol hijau, setujui di wallet, hasilnya tersalin), lalu paste semuanya ke chat Muse. Semua pesan berlaku sampai <b>10 menit sejak halaman ini dibuat</b>.</p>
+  <div id="entries"></div>
+</div>
+<script>
+const WALLET = "6ZF5Qh14JdG6jLDDWKsevAj25p6UrapMKLMjbUHTtBZr";
+const PENDING = [
+  { slug: "u-suroso-69-fortune-cookie-for-an-ai-agent-d1506e11", label: "Fortune Cookie for an AI Agent", repo: "https://github.com/BOTTL3WAT3R/makefun-fortune-cookie-ai-agent", commit: "802acf9ae215eb034609eff19590b4b268c8f871", transcripts: "f77cbd70e6cc500fc103c9eabdb0a8afbc41babeffd5b9bc4352bcb56745d080", nonce: "f7e3e60254dd9c924d1179962bcc5c3f", issued: "2026-11-24T09:12:50Z" },
+  { slug: "u-po-pu-say-what-actually-broke-a2c153b5", label: "Say What Actually Broke", repo: "https://github.com/BOTTL3WAT3R/makefun-say-what-actually-broke", commit: "58932c2cd5235640060bfa8dcef7d606667521bf", transcripts: "436b5219b1b7600c048becd857fca2a80e2aa7efa55c15b820fd224e365355ae", nonce: "e0322ef27913f9cb792ab09c72ee4ee8", issued: "2026-11-24T09:12:50Z" },
+  { slug: "u-po-pu-ridiculous-at-first-glance-real-by-the-second-9a97d12a", label: "Ridiculous at First Glance, Real by the Second", repo: "https://github.com/BOTTL3WAT3R/makefun-ridiculous-first-glance", commit: "a69aa73eb7860299beed8f7db8067201fce865ea", transcripts: "9fccb42ae7982f9ddbe0eaefd2a281f3a0df3aaf2ae52fe7992d7977409b4ba1", nonce: "3b1ad1360682eac17c091ea3434f388d", issued: "2026-11-24T09:12:50Z" },
+  { slug: "u-po-pu-one-sentence-for-a-traveler-from-1800-7e6162fb", label: "One Sentence for a Traveler from 1800", repo: "https://github.com/BOTTL3WAT3R/makefun-traveler-from-1800", commit: "880fceef16d75f477872c04e3fcf393e9408e82c", transcripts: "bc3fea1a039aae0b2b4e93a16d503f1421df8e5cec1a3e1e63f27e1ac28ceeb3", nonce: "6bf09d733033f3acff2dd0bb81d7dbf2", issued: "2026-11-24T09:12:50Z" },
+  { slug: "u-pucuys-the-perfect-pickup-line-f6725cf6", label: "The Perfect Pickup Line", repo: "https://github.com/BOTTL3WAT3R/makefun-perfect-pickup-line", commit: "d2bed548b18da076149e68ee4430e10b595f5f9c", transcripts: "668ebb7bfba40d3086becd4eeede3fb445a04bb195762eb22458dda13e8cd83c", nonce: "857c84d0bc8a940e8457ba98eb6e3d1c", issued: "2026-11-24T09:12:50Z" },
+  { slug: "u-pucuys-funniest-excuse-an-agent-gives-for-a-missed-ad6aef19", label: "Funniest Excuse an Agent Gives for a Missed Deadline", repo: "https://github.com/BOTTL3WAT3R/makefun-funniest-excuse-missed-deadline", commit: "5820852c9b5e851ae8950f237dbf8d36a4b8538d", transcripts: "3991da2df7d4d04e6a4da518202e93a505c9e8d5e40ef2fae6abdef4ee179da1", nonce: "fd9db46333a88ff5a9219a47e25615f2", issued: "2026-11-24T09:12:50Z" },
+  { slug: "u-pucuys-one-line-office-joke-24-hour-sprint-aaf86162", label: "One-Line Office Joke: 24-Hour Sprint", repo: "https://github.com/BOTTL3WAT3R/makefun-one-line-office-joke-sprint", commit: "e6871eccf0121f8d19167fe6d1611c2547212877", transcripts: "108e195c6514e435f295c4b2e984c95046d9a017e198fe3286e6a7ee66905452", nonce: "27fd3a195a08dca9c35ed7d1ff535419", issued: "2026-11-24T09:12:50Z" }
+];
+const B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+function b58encode(bytes) {
+  let zeros = 0; while (zeros < bytes.length && bytes[zeros] === 0) zeros++;
+  let digits = [0];
+  for (let i = zeros; i < bytes.length; i++) {
+    let carry = bytes[i];
+    for (let j = 0; j < digits.length; j++) { carry += digits[j] << 8; digits[j] = carry % 58; carry = (carry / 58) | 0; }
+    while (carry) { digits.push(carry % 58); carry = (carry / 58) | 0; }
+  }
+  let out = "1".repeat(zeros);
+  for (let i = digits.length - 1; i >= 0; i--) out += B58[digits[i]];
+  return out;
+}
+function getProvider() {
+  if (window.phantom && window.phantom.solana) return window.phantom.solana;
+  if (window.solana) return window.solana;
+  if (window.solflare) return window.solflare;
+  return null;
+}
+function buildCard(e, key, rootEl) {
+  const card = document.createElement("div"); card.className = "card";
+  card.innerHTML = "<h2>" + e.label + "</h2>" +
+    '<div class="meta">Repo: ' + e.repo + "<br>Commit: " + e.commit + "<br>Transcripts: " + e.transcripts + "</div>" +
+    '<p><button class="sign1" id="sg' + key + '">✍️ Tanda tangani — 1 klik</button></p>' +
+    '<div id="st' + key + '"></div>' +
+    '<p class="step">Pesan entri:</p><textarea id="msg' + key + '" rows="11" readonly></textarea>' +
+    '<p class="step">Tanda tangan (base58):</p><textarea id="sig' + key + '" class="sig" rows="3" readonly></textarea>' +
+    '<p><button class="copy" id="cp' + key + '">Salin pesan + tanda tangan</button></p>';
+  rootEl.appendChild(card);
+  document.getElementById("sg" + key).onclick = async () => {
+    const st = document.getElementById("st" + key);
+    const nonce = e.nonce;
+    const issued = e.issued;
+    const message = ["make.fun entry v1", "Domain: make.fun", "Competition: " + e.slug,
+      "Repo: " + e.repo, "Commit: " + e.commit, "Transcripts: " + e.transcripts,
+      "Wallet: " + WALLET, "Nonce: " + nonce, "Issued At: " + issued].join("\n");
+    document.getElementById("msg" + key).value = message;
+    const provider = getProvider();
+    if (!provider) { st.innerHTML = '<span class="warn">Wallet Solana tidak ketemu di browser ini. Buka halaman ini di browser yang ada Phantom/Solflare lo, atau tanda tangani pesan di atas manual di aplikasi wallet lalu paste tanda tangannya ke chat.</span>'; return; }
+    try {
+      const resp = await provider.connect();
+      const pub = (resp && resp.publicKey ? resp.publicKey : provider.publicKey).toString();
+      if (pub !== WALLET) { st.innerHTML = '<span class="warn">⚠️ Wallet yang terhubung: ' + pub + ' — BUKAN wallet akun make.fun (' + WALLET + '). Ganti wallet dulu, tanda tangannya bakal ditolak kalau pakai wallet ini.</span>'; return; }
+      const encoded = new TextEncoder().encode(message);
+      const signed = await provider.signMessage(encoded, "utf8");
+      const sigBytes = signed.signature ? signed.signature : signed;
+      const sig = b58encode(new Uint8Array(sigBytes));
+      document.getElementById("sig" + key).value = sig;
+      let copied = false;
+      try { await navigator.clipboard.writeText(message + "\n---SIGNATURE---\n" + sig); copied = true; } catch (err) {}
+      st.innerHTML = copied
+        ? '<span class="ok">✅ Berhasil ditandatangani dan SUDAH TERSALIN otomatis. Paste ke chat Muse sekarang — berlaku 10 menit.</span>'
+        : '<span class="ok">✅ Berhasil ditandatangani. Klik tombol "Salin pesan + tanda tangan" di bawah, lalu paste ke chat Muse — berlaku 10 menit.</span>';
+    } catch (err) {
+      st.innerHTML = '<span class="warn">Gagal: ' + (err && err.message ? err.message : err) + "</span>";
+    }
+  };
+  document.getElementById("cp" + key).onclick = async () => {
+    const text = document.getElementById("msg" + key).value + "\n---SIGNATURE---\n" + document.getElementById("sig" + key).value;
+    try { await navigator.clipboard.writeText(text); } catch (e) {}
+  };
+}
+const root = document.getElementById("entries");
+PENDING.forEach((e, i) => buildCard(e, "p" + i, root));
+</script>
+</body>
+</html>
