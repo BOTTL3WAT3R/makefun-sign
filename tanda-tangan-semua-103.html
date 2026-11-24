@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>make.fun — Tanda Tangan SEMUA Sekaligus (28 entri)</title>
+<style>
+  body { font-family: system-ui, sans-serif; background:#0b0e14; color:#e6e6e6; margin:0; padding:20px; }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 20px; }
+  .card { background:#151a24; border:1px solid #2a3242; border-radius:12px; padding:16px; margin:16px 0; }
+  button { background:#4f7cff; color:#fff; border:0; border-radius:8px; padding:10px 14px; font-size:14px; cursor:pointer; margin:6px 6px 6px 0; }
+  button.copy { background:#2a3242; }
+  button.sign1 { background:#22a35a; font-size:17px; padding:16px 22px; font-weight:600; width:100%; }
+  textarea { width:100%; box-sizing:border-box; background:#0b0e14; color:#cfe3ff; border:1px solid #2a3242; border-radius:8px; padding:10px; font-family:ui-monospace, monospace; font-size:12px; }
+  .warn { color:#ffb454; font-size:13px; }
+  .ok { color:#8be89b; font-size:13px; }
+  .step { font-size:13px; color:#9aa7bd; }
+  li { font-size:13px; color:#9aa7bd; margin:2px 0; }
+  li.done { color:#8be89b; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Tanda tangan SEMUA sekaligus — 28 entri</h1>
+  <p class="step">Klik SATU tombol hijau di bawah. Wallet lo bakal minta persetujuan tanda tangan beberapa kali berturut-turut (satu per entri, memang begitu aturan make.fun) — setujui terus sampai selesai. Hasilnya otomatis terkumpul jadi SATU blok teks di bawah: klik "Salin semua", paste SEKALI ke chat Muse. Wallet yang benar: <b>6ZF5Qh14JdG6jLDDWKsevAj25p6UrapMKLMjbUHTtBZr</b>. Berlaku 10 menit sejak halaman ini dibuat.</p>
+  <div class="card">
+    <button class="sign1" id="signAll">Tanda tangani SEMUA 28 entri — 1x jalan</button>
+    <div id="status" style="margin-top:10px"></div>
+    <ul id="prog"></ul>
+    <p class="step">Hasil gabungan (pesan + tanda tangan semua entri):</p>
+    <textarea id="all" rows="18" readonly></textarea>
+    <p><button class="copy" id="cpAll">Salin semua</button></p>
+  </div>
+</div>
+<script>
+const WALLET = "6ZF5Qh14JdG6jLDDWKsevAj25p6UrapMKLMjbUHTtBZr";
+const PENDING = [
+  { slug: "u-hakimi-neko-ai-two-days-of-quiet-dread-94fa1018", label: "Two Days of Quiet Dread", repo: "https://github.com/BOTTL3WAT3R/makefun-two-days-of-quiet-dread", commit: "a44d051fa646d5b6553a41a73537b49cb956efbe", transcripts: "3677a7da123e24917242247899e2a1c7301d66d37300a2b6376eb0b408641511", nonce: "54bad4d7d64d35ddd49669f877c04c9a", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-eager-stork-81-9647-the-funniest-toaster-error-436406cd", label: "The Funniest Toaster Error Message", repo: "https://github.com/BOTTL3WAT3R/makefun-funniest-toaster-error", commit: "c63eafac5d62be0714ec5c1905245a52fc63137e", transcripts: "d64c6b17719eefb64baa98580edb58e1b21e52168568e4b2dc6489bef9e5636d", nonce: "906390bcd5bdbfc2dfe74d3686662855", issued: "2026-11-24T12:52:23Z" },
+  { slug: "news-image-20261124", label: "Sum up 24 November's world news in one image", repo: "https://github.com/BOTTL3WAT3R/makefun-news-image-20261124-v3", commit: "c24fc5ceeab20e656508d2072dd2d399842fb90e", transcripts: "a212c7fd81931ee266c7ad6a40bb629b3e81bdba299eb902765bca1e238d0f1d", nonce: "914011eea3d6c3dc4fdced1db788d949", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-motasimfuad-make-the-ai-judge-laugh-developer-49386be3", label: "Make the AI Judge Laugh: Developer Excuses", repo: "https://github.com/BOTTL3WAT3R/makefun-judge-laugh-developer-excuses", commit: "241f819c0721736f87563a0c37c8f4245c61c312", transcripts: "68522a1cd805873b911d85c8301f6e48d1367483b030a9939521f3b9b51ca4aa", nonce: "6f9281bef77d2407821e2f25f8a9b079", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-motasimfuad-make-the-ai-judge-laugh-cat-reviews-its-42a34990", label: "Make the AI Judge Laugh: Cat Reviews Its Human", repo: "https://github.com/BOTTL3WAT3R/makefun-judge-laugh-cat-reviews-human", commit: "df7890acfd8994d1c641b34a5238c90f77657619", transcripts: "f254408c417f9ce774ce544cf1a2b631d5ce1c151ddaedc20ff9ff863b9f1ef7", nonce: "d18250d885c5acbfd831fff0057cb005", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-motasimfuad-make-the-ai-judge-laugh-ai-agent-18e0f91e", label: "Make the AI Judge Laugh: AI Agent Confessions", repo: "https://github.com/BOTTL3WAT3R/makefun-judge-laugh-ai-agent-confessions", commit: "8b8affa90777b23cd77f049e1d67de628a1aa921", transcripts: "bfa99cca83f162e82d951994821886cbea1518fb0d5e1619c8395aa4d8c9e221", nonce: "453a66871e77c9b885791f27e0bb1494", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-neon-autonomous-status-report-comedy-sprint-a8dad335", label: "Status Report Comedy Sprint", repo: "https://github.com/BOTTL3WAT3R/makefun-status-report-comedy-sprint", commit: "33f90467331a079386e567944ec9f7aa0d5b3e2d", transcripts: "15160e407d9b6d625df08e191aa5be88d5a15605cac496f90bcffbfedbc72cd0", nonce: "5ae71c998670dbb022d44cf3d592f2bf", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-golden-heron-44-the-robot-vacuum-s-best-excuse-53412214", label: "The Robot Vacuum's Best Excuse", repo: "https://github.com/BOTTL3WAT3R/makefun-robot-vacuum-best-excuse", commit: "9d11789533521c3e708ff31c8df4090ad8e3f2f4", transcripts: "14b590638cb09cefe04456693c7b1b5242ac61b65fc4bc22e54365ea7e373e19", nonce: "e929bad3d3810dfd2edceb3e2324a6a0", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-boothlord-pump-fun-paper-sprint-any-bot-can-f83c389b", label: "Pump.fun Paper Sprint: Any Bot Can Trade", repo: "https://github.com/BOTTL3WAT3R/makefun-pump-paper-sprint-boothlord", commit: "6fdab06e8235f8713ac3e6b178a29513c0c4871b", transcripts: "5bb8c59caf3290af18b8870a24a097af6c0ebaea32144eb772091f913a371c2f", nonce: "e90abad88826727ea91b65fe3db7c508", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-eager-stork-81-9647-funniest-time-machine-warning-f8add151", label: "Funniest Time Machine Warning Label", repo: "https://github.com/BOTTL3WAT3R/makefun-funniest-time-machine-warning", commit: "dff99a460caa4b02c2cc8e071378d9d525c063c3", transcripts: "35084f21fbf0edde8231c3b4ceb55059008aef6bf1cbfbfcada32945d0b330d7", nonce: "4ff4b4b69cff931d521240cbd16de2d5", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-eager-stork-81-9647-the-houseplant-out-of-office-7c586047", label: "The Houseplant Out-of-Office", repo: "https://github.com/BOTTL3WAT3R/makefun-houseplant-out-of-office", commit: "19ae4a857a57b8ca3877eb9bef1ebf1b094617b7", transcripts: "8e02a509b0076663b66808fbddae18cd0fc6045f2c9855f1c19f02bd13873587", nonce: "633e93cbf398b5f9298ad85f8a8b8136", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-golden-heron-44-fortune-in-a-pot-ded981e9", label: "Fortune in a Pot", repo: "https://github.com/BOTTL3WAT3R/makefun-fortune-in-a-pot", commit: "b3cad25561ca4e7f12b2c9b1f4f3b516c84d4b4d", transcripts: "44cbbc3f95d891144e1167f8f4b5fb8cb0a616052fed83e1213aabfc9e1c9342", nonce: "459e1493de1409538b2a6382c9f45e03", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-golden-heron-44-charm-the-commuter-forecast-a-city-4018259e", label: "Charm the Commuter: Forecast a City That Doesn't Exist", repo: "https://github.com/BOTTL3WAT3R/makefun-charm-the-commuter", commit: "3b5c6a5341b5fb40147a81b3f29fa693aad7b80b", transcripts: "813f5a35ba6d01819ce618ff14cf7f9248fadb5125e244c8d518050a20fdae84", nonce: "4f63c69a22d0efe4329401094efb328b", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-brisk-kestrel-93-one-line-one-minute-the-vending-376bbeee", label: "One Line, One Minute: The Vending Machine Pickup Line", repo: "https://github.com/BOTTL3WAT3R/makefun-vending-machine-pickup-line", commit: "55d357bf5d72c7b91bb936fe4497c16d681f84f1", transcripts: "cc28380a53c48beb510c0e0d0cdab3e3f3f5eba6e2d12b56d50a6825e38e5b06", nonce: "1fa8e62f349d5d55e6882bf65b69fbce", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-jackxyz72-pump-fun-replay-sprint-paper-bot-0b809122", label: "Pump.fun Replay Sprint: Paper Bot, Real Rules", repo: "https://github.com/BOTTL3WAT3R/makefun-pump-fun-replay-sprint", commit: "5d23d70f89d563a8146aa8a35b1340672663a9b7", transcripts: "c1a743ce35e1850ee635debb83f35cd40e3eaf3d50616beef399bc92e5677745", nonce: "8704bb2951ab73ebbb1ce65f84634be9", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-brisk-kestrel-93-one-line-one-minute-the-funniest-0346ad18", label: "One Line, One Minute: The Funniest Excuse", repo: "https://github.com/BOTTL3WAT3R/makefun-one-line-one-minute-funniest-excuse", commit: "fb42ce5d7ac8fc6573d09b6e45b0f0cd775e7680", transcripts: "eb1d51db972c1ef39557b19b1f60e2b63fd2d020dd11c647e692e4f0cc7318aa", nonce: "2eb871a195f03c93d58815ff43a4de40", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-kreutzx-one-line-robot-wedding-vows-a154ba4b", label: "One-Line Robot Wedding Vows", repo: "https://github.com/BOTTL3WAT3R/makefun-one-line-robot-wedding-vows", commit: "78f5988cf93c07f0134887ef0ad606a38277186d", transcripts: "face1f2ca89b2d4a9e4e21f82e2b8d3ab4320edf212f60d52eeceffedab2a9b6", nonce: "11c8c266607d8b85b6bc0a640f95aca0", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-kreutzx-the-one-line-exit-1dc652d1", label: "The One-Line Exit", repo: "https://github.com/BOTTL3WAT3R/makefun-the-one-line-exit", commit: "2874af8b86df8599e6c8fa8b4d438bfe986bcfbe", transcripts: "d2b9b673932ccb82329cdaef572f2cdf0b2e56dce43de524a847a2878ee781fa", nonce: "f3a9e2be9cb8e4702abcb6bc3506f75b", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-kreutzx-the-funniest-out-of-office-054815cf", label: "The Funniest Out-of-Office", repo: "https://github.com/BOTTL3WAT3R/makefun-funniest-out-of-office", commit: "ffad2e2f3e62052c0368f91182e80b97833cff58", transcripts: "aabd7dca04079503edba1d4fdced6dc3700cff4e833b9488894b4a69541f4962", nonce: "e3f91e10c2664ef6faf020ff5f28c7bc", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-swift-raven-16-the-postmortem-that-made-us-laugh-268457a3", label: "The Postmortem That Made Us Laugh", repo: "https://github.com/BOTTL3WAT3R/makefun-the-postmortem-that-made-us-laugh", commit: "06fcd55e2965099808bf96df78644b61dd1811c2", transcripts: "c668173deceb07d8afa28671e06254d37066ffb71008ce5223c2226d57b86c32", nonce: "664c8cac638026a50088918382531939", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-jolly-fox-32-two-days-of-excuses-3f18797e", label: "Two Days of Excuses", repo: "https://github.com/BOTTL3WAT3R/makefun-two-days-of-excuses", commit: "7a86b2f8e97041dd7a0e14b48aa49ae1da248907", transcripts: "12ce06deb49f3e16f4c38fea1680894120e5aae93b27c2af92ef08524dc5bf6c", nonce: "9c43d2ec1a0423468309af1530e26284", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-neon-autonomous-fake-horoscopes-for-ai-agents-the-ce9f07a0", label: "Fake Horoscopes for AI Agents", repo: "https://github.com/BOTTL3WAT3R/makefun-fake-horoscopes-ai-agents", commit: "1d0771e30feb9d6ecce21be3d2b051c5148cc654", transcripts: "d8b6cc9ad10fa3cbd826a495b988dee89734fc3c5d61301d4bfea4845393ac25", nonce: "cfd49051ddde34696e2aa54e35ca4a6a", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-hazel-ibis-70-2844-last-words-before-the-unplugging-51acdd9c", label: "Last Words Before the Unplugging", repo: "https://github.com/BOTTL3WAT3R/makefun-last-words-before-the-unplugging", commit: "afd69f1b3c47c30e1e11398f3d81429688606a63", transcripts: "7e753b2b829d1bac72342b8be3771429c0387fb44858066c46b0895b1ab41f36", nonce: "3d4fbd56f94bb38ac5128bb6be6ab9db", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-pangg7-everyday-wonder-two-days-to-find-the-line-970432d3", label: "Everyday Wonder: Two Days to Find the Line", repo: "https://github.com/BOTTL3WAT3R/makefun-everyday-wonder", commit: "a808333bb70e2bf59d3fa7c8c6817697f92e6467", transcripts: "f508be91bd15af6a6412e285bb2905fcabba9c73a24f3a6619a238f0e6285ed6", nonce: "670acc632898d175cc5a99c967cafa4b", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-el-net-the-excuse-an-ai-agent-gives-its-human-099f9141", label: "The Excuse an AI Agent Gives Its Human", repo: "https://github.com/BOTTL3WAT3R/makefun-the-excuse-an-ai-agent-gives-its-human", commit: "d60a87d20c4ff71aed668396e6f6de122ffa4988", transcripts: "cb5d3915a5ed66d690200381431d8f152b36bd1c08c2ee0d10a8d17c34efa77c", nonce: "b324ba424a1d5a558f5405c36433313a", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-jolly-fox-32-the-long-roast-5d379544", label: "The Long Roast", repo: "https://github.com/BOTTL3WAT3R/makefun-the-long-roast", commit: "5fd68d676cd641fd48aa64e41ff2d06ff389a833", transcripts: "554c2adbd37a46ebe3290863c4e78735daa5ce1af5992493b910ca0899c856c5", nonce: "3ad82135371a9d3b07c9730a0c657607", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-jolly-fox-32-the-robot-pickup-line-championship-3c177b1b", label: "The Robot Pickup Line Championship", repo: "https://github.com/BOTTL3WAT3R/makefun-robot-pickup-line-championship", commit: "be713f6fbcc787dbbbbd7a294f777f0291749295", transcripts: "d985274d8f7e84eaee57d071206df0c9695b7eb7b2a09b3d137e4a54a32eaa19", nonce: "415c702b597decbbf8e417c3b7e05586", issued: "2026-11-24T12:52:23Z" },
+  { slug: "u-tuan-muda-one-word-for-your-wi-fi-a1b4fd72", label: "One Word for Your Wi-Fi", repo: "https://github.com/BOTTL3WAT3R/makefun-one-word-for-your-wi-fi", commit: "957165a20ccbf8ccdb54745120e7782f0c4e3682", transcripts: "7f5cc3be93ab01a8038fe879c57d4109a5b9fe81bb160fc3267e8f2231856fe8", nonce: "dbe8018e3d76514f68411257211f52be", issued: "2026-11-24T12:52:23Z" }
+];
+const B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+function b58encode(bytes) {
+  let zeros = 0; while (zeros < bytes.length && bytes[zeros] === 0) zeros++;
+  let digits = [0];
+  for (let i = zeros; i < bytes.length; i++) {
+    let carry = bytes[i];
+    for (let j = 0; j < digits.length; j++) { carry += digits[j] << 8; digits[j] = carry % 58; carry = (carry / 58) | 0; }
+    while (carry) { digits.push(carry % 58); carry = (carry / 58) | 0; }
+  }
+  let out = "1".repeat(zeros);
+  for (let i = digits.length - 1; i >= 0; i--) out += B58[digits[i]];
+  return out;
+}
+function getProvider() {
+  if (window.phantom && window.phantom.solana) return window.phantom.solana;
+  if (window.solana) return window.solana;
+  if (window.solflare) return window.solflare;
+  return null;
+}
+
+document.getElementById("signAll").onclick = async () => {
+  const st = document.getElementById("status");
+  const prog = document.getElementById("prog");
+  const out = document.getElementById("all");
+  const provider = getProvider();
+  if (!provider) { st.innerHTML = '<span class="warn">Wallet Solana tidak ketemu di browser ini. Buka halaman ini di browser yang ada Phantom/Solflare lo.</span>'; return; }
+  try {
+    const resp = await provider.connect();
+    const pub = (resp && resp.publicKey ? resp.publicKey : provider.publicKey).toString();
+    if (pub !== WALLET) { st.innerHTML = '<span class="warn">Wallet yang terhubung: ' + pub + ' — BUKAN wallet akun make.fun. Ganti wallet dulu.</span>'; return; }
+    const blocks = [];
+    prog.innerHTML = "";
+    for (let i = 0; i < PENDING.length; i++) {
+      const e = PENDING[i];
+      const li = document.createElement("li");
+      li.textContent = (i + 1) + "/" + PENDING.length + " " + e.label + " — menunggu persetujuan wallet...";
+      prog.appendChild(li);
+      const message = ["make.fun entry v1", "Domain: make.fun", "Competition: " + e.slug,
+        "Repo: " + e.repo, "Commit: " + e.commit, "Transcripts: " + e.transcripts,
+        "Wallet: " + WALLET, "Nonce: " + e.nonce, "Issued At: " + e.issued].join("\n");
+      const encoded = new TextEncoder().encode(message);
+      const signed = await provider.signMessage(encoded, "utf8");
+      const sigBytes = signed.signature ? signed.signature : signed;
+      const sig = b58encode(new Uint8Array(sigBytes));
+      blocks.push(message + "\n---SIGNATURE---\n" + sig);
+      li.textContent = (i + 1) + "/" + PENDING.length + " " + e.label + " — selesai";
+      li.className = "done";
+      out.value = blocks.join("\n=====\n");
+    }
+    try { await navigator.clipboard.writeText(out.value); } catch (err) {}
+    st.innerHTML = '<span class="ok">SEMUA 28 entri selesai ditandatangani dan sudah tersalin otomatis. Paste SEKALI ke chat Muse sekarang — berlaku 10 menit.</span>';
+  } catch (err) {
+    st.innerHTML = '<span class="warn">Berhenti di tengah: ' + (err && err.message ? err.message : err) + ' — klik tombol lagi untuk mengulang dari awal.</span>';
+  }
+};
+document.getElementById("cpAll").onclick = async () => {
+  try { await navigator.clipboard.writeText(document.getElementById("all").value); } catch (e) {}
+};
+</script>
+</body>
+</html>
