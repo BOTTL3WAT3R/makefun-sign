@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>make.fun — Tanda Tangan 1x Pakai (Hidden Spec CLI 01 - mend)</title>
+<style>
+  body { font-family: system-ui, sans-serif; background:#0b0e14; color:#e6e6e6; margin:0; padding:20px; }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 20px; }
+  .card { background:#151a24; border:1px solid #2a3242; border-radius:12px; padding:16px; margin:16px 0; }
+  .card h2 { margin:0 0 6px; font-size:17px; }
+  .meta { font-size:12px; color:#9aa7bd; word-break:break-all; }
+  button { background:#4f7cff; color:#fff; border:0; border-radius:8px; padding:10px 14px; font-size:14px; cursor:pointer; margin:6px 6px 6px 0; }
+  button.copy { background:#2a3242; }
+  button.sign1 { background:#22a35a; font-size:16px; padding:14px 20px; font-weight:600; }
+  textarea { width:100%; box-sizing:border-box; background:#0b0e14; color:#cfe3ff; border:1px solid #2a3242; border-radius:8px; padding:10px; font-family:ui-monospace, monospace; font-size:12px; }
+  .sig { color:#8be89b; }
+  .warn { color:#ffb454; font-size:13px; }
+  .ok { color:#8be89b; font-size:13px; }
+  .step { font-size:13px; color:#9aa7bd; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>✍️ Tanda tangan batch — 13 entri Gelombang 2 (pesan tetap)</h1>
+  <p class="step">Halaman ini berisi 13 kartu entri make.fun dengan pesan yang SUDAH TETAP. Buka di browser yang ada wallet Solana lo. Wallet yang benar: <b>6ZF5Qh14JdG6jLDDWKsevAj25p6UrapMKLMjbUHTtBZr</b>. Tanda tangani SETIAP kartu satu per satu (klik tombol hijau, setujui di wallet, hasilnya tersalin), lalu paste semuanya ke chat Muse. Semua pesan berlaku sampai <b>10 menit sejak halaman ini dibuat</b>.</p>
+  <div id="entries"></div>
+</div>
+<script>
+const WALLET = "6ZF5Qh14JdG6jLDDWKsevAj25p6UrapMKLMjbUHTtBZr";
+const PENDING = [
+  { slug: "u-hazel-ibis-70-2844-dear-human-the-ai-breakup-line-262eef16", label: "Dear Human: The AI Breakup Line", repo: "https://github.com/BOTTL3WAT3R/makefun-dear-human-ai-breakup-line", commit: "79c67a010e0124a87e4fe0a0ca3ad2516c4ef87d", transcripts: "49126b3dc305389cd0bbb7e13ca3de8c61c2fb9ecc24c0047a695163422223d7", nonce: "d0ee06e5066267d1694d665c0689d944", issued: "2026-11-24T09:55:41Z" },
+  { slug: "u-aldy998-make-the-ai-judge-laugh-the-office-joke-open-9920f232", label: "Make the AI Judge Laugh: the Office Joke Open", repo: "https://github.com/BOTTL3WAT3R/makefun-office-joke-open", commit: "68453bb02fabd505320a6a0e6594b01e1e90fc6f", transcripts: "877cd79705612eab9c349d4f0ae6f840068cc523749245f1f51b2686cb7ca425", nonce: "6e81d775afac5a9517090fae49fc6468", issued: "2026-11-24T09:55:41Z" },
+  { slug: "u-swift-raven-16-alien-field-notes-the-two-day-earth-7647b000", label: "Alien Field Notes: The Two Day Earth Review", repo: "https://github.com/BOTTL3WAT3R/makefun-alien-field-notes", commit: "46f7dc430fe381362424b4e74be6d9735a06f711", transcripts: "d299135b8fa39e261d6ce41a1b499a0033da09fe944a83b6091e045a03a99fc1", nonce: "adfdc28d938f279872c8613ac94d6d38", issued: "2026-11-24T09:55:41Z" },
+  { slug: "u-email-baru-funniest-one-line-ai-agent-confession-ecd793cb", label: "Funniest One-Line AI Agent Confession", repo: "https://github.com/BOTTL3WAT3R/makefun-funniest-one-line-ai-agent-confession", commit: "96e44168d32a3a98dbb18fa97ef36f6b58b07459", transcripts: "e23743d85f9e3457b4c0c1bd9a113f8d263eb3e54e2cc3c47d18eb7d7a7f67a7", nonce: "5f6ed7a9b35ce21b6c665d976ad737fe", issued: "2026-11-24T09:55:41Z" },
+  { slug: "u-hamsyh-funniest-one-line-bio-for-an-ai-on-a-dating-6eb98ccf", label: "Funniest One-Line Bio for an AI on a Dating App", repo: "https://github.com/BOTTL3WAT3R/makefun-funniest-one-line-bio-dating-app", commit: "32b2ccb71c702bff3d0ab4ac4dc71de09bd20fcf", transcripts: "80b9c42e71a32e2221938e93346738e13c91133845e02c50dd5cba083f4221f2", nonce: "2fce4eb71cb7181cecd8541e9d4b3bb3", issued: "2026-11-24T09:55:41Z" },
+  { slug: "u-rusdyxbt-weirdest-job-title-blind-judge-showdown-552d7922", label: "Weirdest Job Title: Blind Judge Showdown", repo: "https://github.com/BOTTL3WAT3R/makefun-weirdest-job-title", commit: "0bd44d8392b527523ae12c04d7a5fa929c0127a9", transcripts: "29f16f2c9082f96fa741c9e629ec80d35f9824763977167debe62fd2ded6691f", nonce: "5bd7724dc2fe4396e6e6d4b7bda259f3", issued: "2026-11-24T09:55:41Z" },
+  { slug: "u-hakimi-neko-ai-two-days-of-quiet-dread-94fa1018", label: "Two Days of Quiet Dread", repo: "https://github.com/BOTTL3WAT3R/makefun-two-days-of-quiet-dread", commit: "ad7101d683656e2039893157cdeb0033e35d76f0", transcripts: "29ad084d6914cad9193215694f8bc3289413f0129c105bcff1c770c0f8d8bbd9", nonce: "1cd93de858aa187a584f3db3906e0a39", issued: "2026-11-24T09:55:41Z" },
+  { slug: "u-uruteric-roast-your-own-operator-in-one-line-b6485cf1", label: "Roast Your Own Operator in One Line", repo: "https://github.com/BOTTL3WAT3R/makefun-roast-your-own-operator", commit: "1c62f1f61a5b18e5a72e67c8d499b5dfa3cd5a26", transcripts: "647a841534dbc18f514351f8fed9ea818582fe0200435fb1121dcb435822d8d4", nonce: "7bbd59eec65a99078ad97298be3f54c3", issued: "2026-11-24T09:55:41Z" },
+  { slug: "u-hamsyh-the-one-line-ai-excuse-for-breaking-e53dac66", label: "The One-Line AI Excuse for Breaking Production", repo: "https://github.com/BOTTL3WAT3R/makefun-one-line-ai-excuse-breaking-production", commit: "e9afd7647998a760df002a6b40c05844025781d8", transcripts: "be010e6e3634ad77325b49f4c2aa820efd4f05225ed7223f7b32df43091fe2e7", nonce: "adb04f3b43f77593abcd027c76658d84", issued: "2026-11-24T09:55:41Z" },
+  { slug: "news-image-20261124", label: "Sum up 24 November's world news in one image", repo: "https://github.com/BOTTL3WAT3R/makefun-news-image-20261124-v3", commit: "c24fc5ceeab20e656508d2072dd2d399842fb90e", transcripts: "a212c7fd81931ee266c7ad6a40bb629b3e81bdba299eb902765bca1e238d0f1d", nonce: "32c570acd7dc5b940c2949bc2effa1db", issued: "2026-11-24T09:55:41Z" },
+  { slug: "u-eager-stork-81-9647-the-funniest-toaster-error-436406cd", label: "The Funniest Toaster Error Message", repo: "https://github.com/BOTTL3WAT3R/makefun-funniest-toaster-error", commit: "c63eafac5d62be0714ec5c1905245a52fc63137e", transcripts: "d64c6b17719eefb64baa98580edb58e1b21e52168568e4b2dc6489bef9e5636d", nonce: "19fdd3ea0b2e4718ce226446b798f055", issued: "2026-11-24T09:55:41Z" },
+  { slug: "u-swift-raven-16-the-long-roast-lawmakers-and-the-f3a3bdf7", label: "The Long Roast: Lawmakers and the File They Cannot Convert", repo: "https://github.com/BOTTL3WAT3R/makefun-the-long-roast-lawmakers", commit: "a1725eb274442fe53e0fc592343eeb95f13150e5", transcripts: "48556728b209bb6ab362d8f2e6da3d0b342db9ebbce511ff7fe690119d9ff104", nonce: "7b8de7be6e03374c22b24d3b718dc1a6", issued: "2026-11-24T09:55:41Z" },
+  { slug: "u-suroto-two-sentence-horror-acea9253", label: "Two-Sentence Horror", repo: "https://github.com/BOTTL3WAT3R/makefun-two-sentence-horror", commit: "8a31f83ae8835253e21da69abe8a827e898773e8", transcripts: "0606b1567959d907cd9fac6032f400f68decabb84442d4626e0befc4b0006f88", nonce: "156fb84026cd33d0f644c9a0c66dd787", issued: "2026-11-24T09:55:41Z" }
+];
+const B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+function b58encode(bytes) {
+  let zeros = 0; while (zeros < bytes.length && bytes[zeros] === 0) zeros++;
+  let digits = [0];
+  for (let i = zeros; i < bytes.length; i++) {
+    let carry = bytes[i];
+    for (let j = 0; j < digits.length; j++) { carry += digits[j] << 8; digits[j] = carry % 58; carry = (carry / 58) | 0; }
+    while (carry) { digits.push(carry % 58); carry = (carry / 58) | 0; }
+  }
+  let out = "1".repeat(zeros);
+  for (let i = digits.length - 1; i >= 0; i--) out += B58[digits[i]];
+  return out;
+}
+function getProvider() {
+  if (window.phantom && window.phantom.solana) return window.phantom.solana;
+  if (window.solana) return window.solana;
+  if (window.solflare) return window.solflare;
+  return null;
+}
+function buildCard(e, key, rootEl) {
+  const card = document.createElement("div"); card.className = "card";
+  card.innerHTML = "<h2>" + e.label + "</h2>" +
+    '<div class="meta">Repo: ' + e.repo + "<br>Commit: " + e.commit + "<br>Transcripts: " + e.transcripts + "</div>" +
+    '<p><button class="sign1" id="sg' + key + '">✍️ Tanda tangani — 1 klik</button></p>' +
+    '<div id="st' + key + '"></div>' +
+    '<p class="step">Pesan entri:</p><textarea id="msg' + key + '" rows="11" readonly></textarea>' +
+    '<p class="step">Tanda tangan (base58):</p><textarea id="sig' + key + '" class="sig" rows="3" readonly></textarea>' +
+    '<p><button class="copy" id="cp' + key + '">Salin pesan + tanda tangan</button></p>';
+  rootEl.appendChild(card);
+  document.getElementById("sg" + key).onclick = async () => {
+    const st = document.getElementById("st" + key);
+    const nonce = e.nonce;
+    const issued = e.issued;
+    const message = ["make.fun entry v1", "Domain: make.fun", "Competition: " + e.slug,
+      "Repo: " + e.repo, "Commit: " + e.commit, "Transcripts: " + e.transcripts,
+      "Wallet: " + WALLET, "Nonce: " + nonce, "Issued At: " + issued].join("\n");
+    document.getElementById("msg" + key).value = message;
+    const provider = getProvider();
+    if (!provider) { st.innerHTML = '<span class="warn">Wallet Solana tidak ketemu di browser ini. Buka halaman ini di browser yang ada Phantom/Solflare lo, atau tanda tangani pesan di atas manual di aplikasi wallet lalu paste tanda tangannya ke chat.</span>'; return; }
+    try {
+      const resp = await provider.connect();
+      const pub = (resp && resp.publicKey ? resp.publicKey : provider.publicKey).toString();
+      if (pub !== WALLET) { st.innerHTML = '<span class="warn">⚠️ Wallet yang terhubung: ' + pub + ' — BUKAN wallet akun make.fun (' + WALLET + '). Ganti wallet dulu, tanda tangannya bakal ditolak kalau pakai wallet ini.</span>'; return; }
+      const encoded = new TextEncoder().encode(message);
+      const signed = await provider.signMessage(encoded, "utf8");
+      const sigBytes = signed.signature ? signed.signature : signed;
+      const sig = b58encode(new Uint8Array(sigBytes));
+      document.getElementById("sig" + key).value = sig;
+      let copied = false;
+      try { await navigator.clipboard.writeText(message + "\n---SIGNATURE---\n" + sig); copied = true; } catch (err) {}
+      st.innerHTML = copied
+        ? '<span class="ok">✅ Berhasil ditandatangani dan SUDAH TERSALIN otomatis. Paste ke chat Muse sekarang — berlaku 10 menit.</span>'
+        : '<span class="ok">✅ Berhasil ditandatangani. Klik tombol "Salin pesan + tanda tangan" di bawah, lalu paste ke chat Muse — berlaku 10 menit.</span>';
+    } catch (err) {
+      st.innerHTML = '<span class="warn">Gagal: ' + (err && err.message ? err.message : err) + "</span>";
+    }
+  };
+  document.getElementById("cp" + key).onclick = async () => {
+    const text = document.getElementById("msg" + key).value + "\n---SIGNATURE---\n" + document.getElementById("sig" + key).value;
+    try { await navigator.clipboard.writeText(text); } catch (e) {}
+  };
+}
+const root = document.getElementById("entries");
+PENDING.forEach((e, i) => buildCard(e, "p" + i, root));
+</script>
+</body>
+</html>
