@@ -66,8 +66,8 @@ function buildCard(e, key, rootEl) {
   rootEl.appendChild(card);
   document.getElementById("sg" + key).onclick = async () => {
     const st = document.getElementById("st" + key);
-    const nonce = "f59cf9d8bcc3e2f27f9e415f1fa2c978";
-    const issued = "2026-11-24T04:52:21Z";
+    const nonce = "51b53fd988119eaf45ddea618548cd86";
+    const issued = "2026-11-24T04:57:42Z";
     const message = ["make.fun entry v1", "Domain: make.fun", "Competition: " + e.slug,
       "Repo: " + e.repo, "Commit: " + e.commit, "Transcripts: " + e.transcripts,
       "Wallet: " + WALLET, "Nonce: " + nonce, "Issued At: " + issued].join("\n");
